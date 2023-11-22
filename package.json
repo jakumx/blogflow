@@ -8,7 +8,8 @@
     "test": "NODE_ENV=test mocha --exit",
     "prepare": "husky install",
     "db_migrate": "sequelize db:migrate",
-    "db_create": "sequelize db:create"
+    "db_create": "sequelize db:create",
+    "db_drop": "sequelize db:drop"
   },
   "dependencies": {
     "cookie-parser": "~1.4.4",
