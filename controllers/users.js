@@ -1,15 +1,27 @@
 const express = require('express')
 const router = express.Router()
+const { User } = require('../models')
+const { singleView } = require('../views/users')
 
-/* GET users listing. */
-router.get('/:id', function (_req, res, _next) {
-  res.status(200)
-  res.json({ page: 'GET users' })
-})
+router.post('/', async function (req, res, _next) {
+  const { credential } = req.body
+  const credentialSplited = credential.split('.')
+  const data = JSON.parse(atob(credentialSplited[1]))
 
-router.post('/', function (_req, res, _next) {
+  const [user] = await User.findOrCreate({
+    where: {
+      email: data.email
+    },
+    defaults: {
+      name: data.name,
+      sub: data.sub,
+      email: data.email,
+      picture: data.picture
+    }
+  })
+
   res.status(201)
-  res.json({ page: 'POST users' })
+  res.json({ user: singleView(user) })
 })
 
 module.exports = router
