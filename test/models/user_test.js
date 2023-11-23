@@ -1,5 +1,5 @@
 const expect = require('chai').expect
-const models = require('../models')
+const models = require('../../models')
 const User = models.User
 
 describe('User model', function () {
