@@ -5,6 +5,7 @@ const logger = require('morgan')
 
 const usersController = require('./controllers/users')
 const postsController = require('./controllers/posts')
+const categoriesController = require('./controllers/categories')
 
 const app = express()
 
@@ -16,5 +17,6 @@ app.use(express.static(path.join(__dirname, 'public')))
 
 app.use('/users', usersController)
 app.use('/posts', postsController)
+app.use('/categories', categoriesController)
 
 module.exports = app
