@@ -3,14 +3,16 @@ const chaiHttp = require('chai-http')
 const expect = require('chai').expect
 const app = require('../../app')
 const { destroyAllData, postFactory } = require('../helpers')
-const { Post } = require('../../models')
+const { Post, User } = require('../../models')
 chai.use(chaiHttp);
 chai.should();
 
 describe('Post controller', function () {
   let postData
+  let userData
   beforeEach(async function () {
     postData = await postFactory()
+    userData = await User.findByPk(postData.UserId)
   })
 
   describe('GET /posts', function () {
@@ -105,6 +107,7 @@ describe('Post controller', function () {
       const { statusCode, error } = await chai.request(app)
         .post('/posts')
         .send({})
+        .set('token', userData.sub)
 
       expect(statusCode).to.equal(400)
       expect(error.text).to.equal('Bad request')
@@ -113,24 +116,24 @@ describe('Post controller', function () {
     it('should fail no userId found', async function () {
       const { statusCode, error } = await chai.request(app)
         .post('/posts')
+        .set('token', '1234' )
         .send({
           title: 'some value',
           content: 'some content',
-          userId: 1,
           categoryId: 2
         })
 
-      expect(statusCode).to.equal(400)
-      expect(error.text).to.equal('Invalid userId')
+      expect(statusCode).to.equal(403)
+      expect(error.text).to.equal('Unauthorized')
     })
 
     it('should fail no categoryId found', async function () {
       const { statusCode, error } = await chai.request(app)
         .post('/posts')
+        .set('token', userData.sub)
         .send({
           title: 'some value',
           content: 'some content',
-          userId: postData.UserId,
           categoryId: 2
         })
 
@@ -141,10 +144,10 @@ describe('Post controller', function () {
     it('should return status created', async function () {
       const resp = await chai.request(app)
       .post('/posts')
+      .set('token', userData.sub)
       .send({
         title: 'some value',
         content: 'some content',
-        userId: postData.UserId,
         categoryId: postData.CategoryId
       })
     
@@ -160,6 +163,7 @@ describe('Post controller', function () {
     it('should return 200', async function () {
       const { statusCode: bodyStatusCode } = await chai.request(app)
         .delete('/posts/1')
+        .set('token', userData.sub)
 
       expect(bodyStatusCode).to.equal(200)
     
@@ -169,6 +173,7 @@ describe('Post controller', function () {
 
       const { statusCode } = await chai.request(app)
       .delete(`/posts/${postData.id}`)
+      .set('token', userData.sub)
     
       expect(statusCode).to.equal(200)
 

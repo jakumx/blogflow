@@ -25,7 +25,7 @@ describe('Categories controller', function () {
 
         const category = body.categories[0]
 
-        expect(category).to.have.all.keys(['name', 'picture'])
+        expect(category).to.have.all.keys(['id', 'name', 'picture'])
     })
   })
 
