@@ -3,6 +3,7 @@ const { Op } = require('sequelize')
 const router = express.Router()
 const { Post, User, Category } = require('../models')
 const { listViews, singleView } = require('../views/posts')
+const auth = require('./auth')
 
 router.get('/', async function (req, res, _next) {
   const whereData = { where: {} }
@@ -47,15 +48,19 @@ router.get('/:id', async function (req, res, _next) {
   res.status(200).json({ post: singleView(post) })
 })
 
-router.post('/', async function (req, res, _next) {
-  const { title = null, content = null, userId = null, categoryId = null } = req.body
+router.post('/', auth, async function (req, res, _next) {
+  const { title = null, content = null, categoryId = null } = req.body
 
-  if (!title || !content || !userId || !categoryId) {
+  if (!title || !content || !categoryId) {
     res.status(400).send('Bad request')
     return
   }
 
-  const user = await User.findByPk(userId)
+  const user = await User.findOne({
+    where: {
+      sub: req.headers.token
+    }
+  })
 
   if (!user) {
     res.status(400).send('Invalid userId')
@@ -72,17 +77,24 @@ router.post('/', async function (req, res, _next) {
   await Post.create({
     title,
     content,
-    UserId: userId,
+    UserId: user.id,
     CategoryId: categoryId
   })
 
   res.status(201).send('created')
 })
 
-router.delete('/:id', async function (req, res, _next) {
+router.delete('/:id', auth, async function (req, res, _next) {
+  const user = await User.findOne({
+    where: {
+      sub: req.headers.token
+    }
+  })
+
   await Post.destroy({
     where: {
-      id: req.params.id
+      id: req.params.id,
+      UserId: user.id
     }
   })
   res.status(200).send('OK')
